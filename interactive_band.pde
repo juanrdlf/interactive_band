@@ -1,3 +1,5 @@
+import ddf.minim.*;
+
 boolean isShowScreen;
 int widthButton;
 int heightButton;
@@ -5,8 +7,16 @@ int spaceForButtons;
 int strokeWidth;
 int optionButtonSize;
 PImage[] imagesGrabacion;
+ArrayList<Rectangle> rectangles;
+ArrayList<AudioSample> as;
+Minim minim;
+
 void setup() {
   isShowScreen = false;
+  rectangles = new ArrayList<Rectangle>();
+  as = new ArrayList<AudioSample>();
+  minim = new Minim(this);
+  loadAudioSamples();
   size(750, 500);
   chargeimagesGrabacion();
   spaceForButtons = 70;
@@ -19,6 +29,9 @@ void setup() {
 }
 
 void draw() {
+  for (Rectangle r : rectangles) {
+    r.draw();
+  }
 }
 
 //Carga las imágenes de los botones en un array
@@ -61,38 +74,12 @@ void mousePressed() {
     showBoard();
     isShowScreen = false;
   } else {
-    //Condiciones de los botones
-    //Primera fila
-    //Primer boton
-    if (mouseX > 0 && mouseX < widthButton && mouseY > 0 && mouseY < heightButton) {
-      println("Pulsado el primer boton");
-    }
-    //Segundo
-    if (mouseX > widthButton && mouseX < widthButton*2 && mouseY > 0 && mouseY < heightButton) {
-      println("Pulsado el segundo boton");
-    }
-    //Tercero
-    if (mouseX > widthButton*2 && mouseX < width && mouseY > 0 && mouseY < heightButton) {
-      println("Pulsado el tercer boton");
-    }
-
-    //Segunda fila
-    //Cuarto boton
-    if (mouseX > 0 && mouseX < widthButton && mouseY > heightButton && mouseY < height - spaceForButtons) {
-      println("Pulsado el cuarto boton");
-    }
-    //Quinto
-    if (mouseX > widthButton && mouseX < widthButton*2 && mouseY > heightButton && mouseY < height - spaceForButtons) {
-      println("Pulsado el quinto boton");
-    }
-    //Sexto
-    if (mouseX > widthButton*2 && mouseX < width && mouseY > heightButton && mouseY < height - spaceForButtons) {
-      println("Pulsado el sexto boton");
-    }
-    
-    //Botones de grabacion
-    for(int i = 0; i < imagesGrabacion.length; i++) {
-      //TODO
+    //Comprobación si se hace click sobre un botón
+    for(Rectangle rect : rectangles) {
+      if (rect.isClicked(mouseX, mouseY)) {
+        rect.playAudio();
+        println("Clicked button " + rect.getId());
+      }
     }
   }
 }
@@ -100,28 +87,45 @@ void mousePressed() {
 void showBoard() {
   background(50);
   stroke(230);
-  strokeWeight(strokeWidth);
   fill(50);
-  rectMode(CORNER);
-  //Botones de la primera fila
-  rect(0, 0, widthButton, heightButton, 28);
-  rect(0+widthButton, 0, widthButton, heightButton, 28);
-  rect(widthButton * 2, 0, widthButton, heightButton, 28);
-  //Botones de la segunda fila
-  rect(0, heightButton, widthButton, heightButton, 28);
-  rect(0+widthButton, heightButton, widthButton, heightButton, 28);
-  rect(widthButton * 2, heightButton, widthButton, heightButton, 28);
-  
-  //Botones de grabacion
-  strokeWeight(1);
   rectMode(CENTER);
   imageMode(CENTER);
+  
+  //Botones de la primera fila
+  Rectangle rect1 = new SoundRectangle(widthButton/2,heightButton/2, widthButton, heightButton, 28, "MusicButton#1", strokeWidth, as.get(0));
+  rect1.setImage(loadImage("images/1.png"), widthButton/2,heightButton/2, widthButton, heightButton);
+  Rectangle rect2 = new SoundRectangle(widthButton+(widthButton/2),heightButton/2, widthButton, heightButton, 28, "MusicButton#2", strokeWidth, as.get(1));
+  rect2.setImage(loadImage("images/2.png"), widthButton+(widthButton/2),heightButton/2, widthButton, heightButton);
+  Rectangle rect3 = new SoundRectangle(widthButton * 2+(widthButton/2), heightButton/2, widthButton, heightButton, 28, "MusicButton#3", strokeWidth, as.get(2));
+  rect3.setImage(loadImage("images/3.png"), widthButton * 2+(widthButton/2), heightButton/2, widthButton, heightButton);
+  rectangles.add(rect1);
+  rectangles.add(rect2);
+  rectangles.add(rect3);
+  //Botones de la segunda fila
+  Rectangle rect4 = new SoundRectangle(widthButton/2, heightButton + (heightButton/2), widthButton, heightButton, 28, "MusicButton#4", strokeWidth, as.get(3));
+  rect4.setImage(loadImage("images/4.png"), widthButton/2, heightButton + (heightButton/2), widthButton, heightButton);
+  Rectangle rect5 = new SoundRectangle(widthButton+(widthButton/2), heightButton + (heightButton/2), widthButton, heightButton, 28, "MusicButton#5", strokeWidth, as.get(4));
+  rect5.setImage(loadImage("images/5.png"), widthButton+(widthButton/2), heightButton + (heightButton/2), widthButton, heightButton);
+  Rectangle rect6 = new SoundRectangle(widthButton * 2+(widthButton/2), heightButton + (heightButton/2), widthButton, heightButton, 28, "MusicButton#6", strokeWidth, as.get(5));
+  rect6.setImage(loadImage("images/6.png"), widthButton * 2+(widthButton/2), heightButton + (heightButton/2), widthButton, heightButton);
+  rectangles.add(rect4);
+  rectangles.add(rect5);
+  rectangles.add(rect6);
+  
+  //Botones de grabacion
   int heightProv, widthProv; //Solo para reutilizarlas en los botones e imágenes
   heightProv =  height - spaceForButtons/2;
   for(int i = 0; i < imagesGrabacion.length; i++) {
     widthProv = 10 + optionButtonSize/2 + i*(optionButtonSize+10);
-    rect(widthProv, heightProv, optionButtonSize, optionButtonSize, 0);
-    image(imagesGrabacion[i], widthProv, heightProv, optionButtonSize - 10, optionButtonSize - 10);
+    Rectangle rect = new BaseRectangle(widthProv, heightProv, optionButtonSize, optionButtonSize, 0, "OptionButton#"+(i+1), 1);
+    rect.setImage(imagesGrabacion[i], widthProv, heightProv, optionButtonSize - 10, optionButtonSize - 10);
+    rectangles.add(rect);
   }
   
+}
+
+void loadAudioSamples() {
+  for (int i = 0; i < 6; i++) {
+    as.add(minim.loadSample("samples/"+i+".wav"));
+  }
 }
