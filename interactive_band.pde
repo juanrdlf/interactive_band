@@ -1,21 +1,33 @@
 import ddf.minim.*;
 
 boolean isShowScreen;
+boolean isCameraOn;
 int widthButton;
 int heightButton;
 int spaceForButtons;
 int strokeWidth;
 int optionButtonSize;
 PImage[] imagesGrabacion;
-ArrayList<Rectangle> rectangles;
+ArrayList<Rectangle> rectangles, cameraRectangles;
 ArrayList<AudioSample> as;
 Minim minim;
+Camera camera;
+float[] pos;
+long start;
+boolean timer;
+int bpm;
 
 void setup() {
+  bpm = 120;
   isShowScreen = false;
+  isCameraOn = false;
   rectangles = new ArrayList<Rectangle>();
+  cameraRectangles = new ArrayList<Rectangle>();
   as = new ArrayList<AudioSample>();
+  pos = new float[2];
+  timer = true;
   minim = new Minim(this);
+  camera = new Camera(this, width, height, 30);
   loadAudioSamples();
   size(750, 500);
   chargeimagesGrabacion();
@@ -29,16 +41,46 @@ void setup() {
 }
 
 void draw() {
+  if(isCameraOn) {
+    pos = camera.draw();
+    drawParams();
+    for (Rectangle r : cameraRectangles) {
+    r.draw();
+  }
+  }
+  else if (!isShowScreen){
+    background(50);
+  }
   for (Rectangle r : rectangles) {
     r.draw();
   }
+  if(pos[0] != -1 && pos[1] != -1 && timer) {
+    checkButtons(pos[0],pos[1]);
+    timer = false;
+    start = System.currentTimeMillis();
+  }
+  if (!timer && System.currentTimeMillis() - start > 1000/(bpm/60.0)) {
+    timer = true;
+  }
+}
+
+void drawParams() {
+  PFont mono = createFont("data/helvetica.ttf", 128);
+  textFont(mono);
+  fill(255);
+  rect(width - 140, height - 18, 260, 20);
+  fill(0);
+  textSize(20);
+  text("BPM: " + bpm, width - 265, height - 10);
+  text("Threshold: " + camera.getThreshold() / 1, width - 160, height - 10);
 }
 
 //Carga las imágenes de los botones en un array
 void chargeimagesGrabacion() {
-  imagesGrabacion = new PImage[2];
+  imagesGrabacion = new PImage[3];
   imagesGrabacion[0] = loadImage("images/reproducir.png");
   imagesGrabacion[1] = loadImage("images/grabar.png");
+  imagesGrabacion[2] = loadImage("images/camara.png");
 }
 
 
@@ -65,23 +107,38 @@ void showWelcome() {
   text("load your own. This sounds can be played", 80, 290);
   text("both with mouse an keyboard or with a cam", 80, 310);
 
-  text("Click if you are prepared to rock", 140, 370);
+  text("Click if you are ready to rock", 140, 370);
 }
 
 //Metodo para cuando pulsamos el raton
 void mousePressed() {
-  if (isShowScreen) {
+  if (isShowScreen && !isCameraOn) {
     showBoard();
     isShowScreen = false;
-  } else {
+  } else if (!isCameraOn) {
     //Comprobación si se hace click sobre un botón
-    for(Rectangle rect : rectangles) {
-      if (rect.isClicked(mouseX, mouseY)) {
-        rect.playAudio();
+    checkButtons(mouseX, mouseY);
+  } else if (isCameraOn) {
+    checkCameraButtons(mouseX, mouseY);
+  }
+}
+
+void checkButtons(float x, float y) {
+  for(Rectangle rect : rectangles) {
+      if (rect.isClicked(x, y)) {
+        rect.doAction();
         println("Clicked button " + rect.getId());
       }
     }
-  }
+}
+
+void checkCameraButtons(float x, float y) {
+  for(Rectangle rect : cameraRectangles) {
+      if (rect.isClicked(x, y)) {
+        rect.doAction();
+        println("Clicked button " + rect.getId());
+      }
+    }
 }
 
 void showBoard() {
@@ -128,4 +185,29 @@ void loadAudioSamples() {
   for (int i = 0; i < 6; i++) {
     as.add(minim.loadSample("samples/"+i+".wav"));
   }
+}
+
+void captureEvent(Capture video) {
+  if (isCameraOn) {
+    camera.captureEvent(video);
+  }
+}
+
+void keyTyped() {
+  if (key=='q' && isCameraOn) {
+    camera.stop();
+    isCameraOn = false;
+  }
+  if (key=='+' && isCameraOn) {
+    bpm++; 
+    camera.increaseThreshold();
+  }
+  if (key=='-' && isCameraOn && bpm > 0) {
+    bpm--; 
+    camera.decreaseThreshold();
+  }
+}
+
+Camera getCamera() {
+  return camera;
 }
