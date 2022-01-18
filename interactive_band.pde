@@ -127,12 +127,12 @@ void showWelcome() {
   text("abcdefghijkl", 220, 170);
 
   textFont(neon_club_music);
-  text("Welcome to Interactive Band, here you will ", 80, 250);
-  text("be able to play some preloaded sounds or", 80, 270);
-  text("load your own. This sounds can be played", 80, 290);
-  text("both with mouse an keyboard or with a cam", 80, 310);
+  text("Bienvenido a Interactive Band, aquí podrás ", 80, 250);
+  text("reproducir algunos sonidos preestablecidos", 80, 270);
+  text("o cargar los tuyos propios. Puede hacerse", 80, 290);
+  text("bien con el ratón o con una cámara.", 100, 310);
 
-  text("Click if you are ready to rock", 140, 370);
+  text("Haz click si estás listo para el rock.", 120, 370);
 }
 
 //Metodo para cuando pulsamos el raton
