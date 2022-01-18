@@ -2,12 +2,10 @@ import processing.video.*;
 
 class Camera {
   Capture video;
-  ColorDetector colorD;
   float threshold = 200;
 
   Camera(PApplet _this, int _width, int _height, int _fps) {
     this.video = new Capture(_this, _width, _height, _fps);
-    colorD = new ColorDetector();
   }
 
   void setup() {
@@ -54,11 +52,12 @@ class Camera {
       }
     }
     updatePixels();
-    if (count > 10) {
+    if (count > 1000) {
       avgX = avgX / count;
       avgY = avgY / count;
       position[0] = avgX;
       position[1] = avgY;
+      ellipse(avgX,avgY,10,10);
     }
     return position;
   }
