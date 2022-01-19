@@ -5,7 +5,12 @@ class Camera {
   float threshold = 200;
 
   Camera(PApplet _this, int _width, int _height, int _fps) {
-    this.video = new Capture(_this, _width, _height, _fps);
+    try{
+      this.video = new Capture(_this, _width, _height, _fps);
+    }
+    catch(IllegalStateException e) {
+      println("No se encontró ninguna cámara web");
+    }
   }
 
   void setup() {
