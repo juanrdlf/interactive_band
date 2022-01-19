@@ -20,7 +20,7 @@ boolean changingAudios;
 PlayRectangle playRect;
 
 void setup() {
-  bpm = 120;
+  bpm = 140;
   isShowScreen = false;
   isCameraOn = false;
   rectangles = new ArrayList<Rectangle>();
@@ -32,7 +32,7 @@ void setup() {
   minim = new Minim(this);
   camera = new Camera(this, width, height, 30);
   loadAudioSamples();
-  size(750, 500);
+  size(1500, 1000);
   chargeimagesGrabacion();
   spaceForButtons = 70;
   optionButtonSize = spaceForButtons - 20;

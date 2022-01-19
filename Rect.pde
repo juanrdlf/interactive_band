@@ -98,7 +98,7 @@ class BaseRectangle extends Rectangle {
   }
 
   void doAction() {
-    if (!isCameraOn) {
+    if (!isCameraOn && camera != null) {
       camera.setup();
       Rectangle masBPM = new BPMUpRectangle(width - 170, height - 22, 10, 10, 0, "BPMUp", 1);
       masBPM.setImage(loadImage("images/mas.png"), width - 170, height - 22, 10, 10, "NO");
